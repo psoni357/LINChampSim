@@ -42,8 +42,8 @@
 // CACHE
 #define BLOCK_SIZE 64
 #define LOG2_BLOCK_SIZE 6
-#define MAX_READ_PER_CYCLE 8
-#define MAX_FILL_PER_CYCLE 1
+#define MAX_READ_PER_CYCLE 20//8
+#define MAX_FILL_PER_CYCLE 20//1
 
 #define INFLIGHT 1
 #define COMPLETED 2
@@ -65,10 +65,10 @@
 #define LOG2_DRAM_ROWS 16
 #define DRAM_COLUMNS 128      // 64B * 32 column chunks (Assuming 1B DRAM cell * 8 chips * 8 transactions = 64B size of column chunks) => 2KB per row
 #define LOG2_DRAM_COLUMNS 7
-#define DRAM_ROW_SIZE (BLOCK_SIZE*DRAM_COLUMNS/1024)
+#define DRAM_ROW_SIZE (BLOCK_SIZE*DRAM_COLUMNS/1024) //calculates to 8 currently
 
-#define DRAM_SIZE (DRAM_CHANNELS*DRAM_RANKS*DRAM_BANKS*DRAM_ROWS*DRAM_ROW_SIZE/1024) 
-#define DRAM_PAGES ((DRAM_SIZE<<10)>>2) 
+#define DRAM_SIZE (DRAM_CHANNELS*DRAM_RANKS*DRAM_BANKS*DRAM_ROWS*DRAM_ROW_SIZE/1024) //calculates to 4096 currently
+#define DRAM_PAGES ((DRAM_SIZE<<10)>>2) //calculates to 1048576 currently
 //#define DRAM_PAGES 10
 
 using namespace std;

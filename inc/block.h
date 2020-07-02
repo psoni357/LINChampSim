@@ -27,6 +27,7 @@ class BLOCK {
 
     // replacement state
     uint32_t lru;
+    double cost;
 
     BLOCK() {
         valid = 0;
@@ -47,6 +48,7 @@ class BLOCK {
         instr_id = 0;
 
         lru = 0;
+        cost = 0;
     };
 };
 
@@ -100,6 +102,8 @@ class PACKET {
              sq_index_depend_on_me;
 
     uint32_t cpu, data_index, lq_index, sq_index;
+   
+    double miss_cost;
 
     uint64_t address, 
              full_addr, 

@@ -17,8 +17,10 @@ void CACHE::update_replacement_state(uint32_t cpu, uint32_t set, uint32_t way, u
 }
 
 uint32_t CACHE::lru_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const BLOCK *current_set, uint64_t ip, uint64_t full_addr, uint32_t type)
-{
+{//this has been updated for the LIN policy victim is selected using the smallest value of (LRU + miss cost) - THIS HAS BEEN MOVED TO THE LLC REPLACEMENT CODE
     uint32_t way = 0;
+
+    int noVictim = 1;
 
     // fill invalid line first
     for (way=0; way<NUM_WAY; way++) {
@@ -28,6 +30,8 @@ uint32_t CACHE::lru_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const 
             cout << "[" << NAME << "] " << __func__ << " instr_id: " << instr_id << " invalid set: " << set << " way: " << way;
             cout << hex << " address: " << (full_addr>>LOG2_BLOCK_SIZE) << " victim address: " << block[set][way].address << " data: " << block[set][way].data;
             cout << dec << " lru: " << block[set][way].lru << endl; });
+
+	    noVictim = 0;
 
             break;
         }
@@ -43,12 +47,26 @@ uint32_t CACHE::lru_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, const 
                 cout << hex << " address: " << (full_addr>>LOG2_BLOCK_SIZE) << " victim address: " << block[set][way].address << " data: " << block[set][way].data;
                 cout << dec << " lru: " << block[set][way].lru << endl; });
 
+		noVictim = 0;
+
                 break;
             }
         }
+
+	/*double smallest = ((double)block[set][0].lru + (4*block[set][0].cost));
+	uint32_t tempWay = 0;
+	for(way=0; way<NUM_WAY; way++){
+	   double toCompare = ((double)block[set][way].lru + (4*block[set][way].cost));
+	   if(toCompare<smallest){
+		smallest = toCompare;
+		tempWay = way;
+	   }
+	}
+	way = tempWay;
+	noVictim = 0;*/
     }
 
-    if (way == NUM_WAY) {
+    if (noVictim) {
         cerr << "[" << NAME << "] " << __func__ << " no victim! set: " << set << endl;
         assert(0);
     }

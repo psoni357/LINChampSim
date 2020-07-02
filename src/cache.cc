@@ -1,6 +1,61 @@
 #include "cache.h"
 #include "set.h"
 
+extern uint64_t LINmissCount;
+
+extern uint64_t costcyc_0_99;
+extern uint64_t costcyc_100_199;
+extern uint64_t costcyc_200_299;
+extern uint64_t costcyc_300_399;
+extern uint64_t costcyc_400_499;
+extern uint64_t costcyc_500_599;
+extern uint64_t costcyc_600_699;
+extern uint64_t costcyc_700_799;
+extern uint64_t costcyc_800_899;
+extern uint64_t costcyc_900_999;
+extern uint64_t costcyc_1000_1099;
+extern uint64_t costcyc_1100_1199;
+extern uint64_t costcyc_1200_1299;
+extern uint64_t costcyc_1300_1399;
+extern uint64_t costcyc_1400_1499;
+extern uint64_t costcyc_1500_plus;
+
+/*extern uint64_t cost_00_05;
+extern uint64_t cost_06_10;
+extern uint64_t cost_11_15;
+extern uint64_t cost_16_20;
+extern uint64_t cost_21_25;
+extern uint64_t cost_26_30;
+extern uint64_t cost_31_35;
+extern uint64_t cost_36_40;
+extern uint64_t cost_41_45;
+extern uint64_t cost_46_50;
+extern uint64_t cost_51_55;
+extern uint64_t cost_56_60;
+extern uint64_t cost_61_65;
+extern uint64_t cost_66_70;
+extern uint64_t cost_71_75;
+extern uint64_t cost_76_80;
+extern uint64_t cost_81_85;
+extern uint64_t cost_86_90;
+extern uint64_t cost_91_95;
+extern uint64_t cost_96_100;
+extern uint64_t cost_101_105;
+extern uint64_t cost_106_110;
+extern uint64_t cost_111_115;
+extern uint64_t cost_116_120;
+extern uint64_t cost_121_plus;*/
+
+extern uint64_t cost_0_60;
+extern uint64_t cost_61_120;
+extern uint64_t cost_121_180;
+extern uint64_t cost_181_240;
+extern uint64_t cost_241_300;
+extern uint64_t cost_301_360;
+extern uint64_t cost_361_420;
+extern uint64_t cost_421_480;
+extern uint64_t cost_481_plus;
+
 uint64_t l2pf_access = 0;
 
 void print_cache_config()
@@ -85,6 +140,7 @@ void CACHE::handle_fill()
 
         // find victim
         uint32_t set = get_set(MSHR.entry[mshr_index].address), way;
+	//uint64_t MCost = 0;
         if (cache_type == IS_LLC) {
             way = llc_find_victim(fill_cpu, MSHR.entry[mshr_index].instr_id, set, block[set], MSHR.entry[mshr_index].ip, MSHR.entry[mshr_index].full_addr, MSHR.entry[mshr_index].type);
         }
@@ -119,6 +175,181 @@ void CACHE::handle_fill()
 	      {
 		uint64_t current_miss_latency = (current_core_cycle[fill_cpu] - MSHR.entry[mshr_index].cycle_enqueued);	
 		total_miss_latency += current_miss_latency;
+
+		uint64_t start = MSHR.entry[mshr_index].cycle_enqueued;
+		uint64_t end = current_core_cycle[fill_cpu];
+
+		double missCost = 0;
+
+		for(uint64_t cyc = start; cyc<=end; cyc++){
+		   missCost += 1.0/MSHR.occupancy;
+		}
+
+		//total_miss_latency += missCost;
+		//MCost = missCost;
+		MSHR.entry[mshr_index].miss_cost = missCost;
+
+		/*uint64_t cycDiff = end-start;
+		switch ((int)(cycDiff/100)){
+		    case 0:
+			costcyc_0_99++;
+			break;
+		    case 1:
+			costcyc_100_199++;
+			break;
+		    case 2:
+			costcyc_200_299++;
+			break;
+		    case 3:
+			costcyc_300_399++;
+			break;
+		    case 4:
+			costcyc_400_499++;
+			break;
+		    case 5:
+			costcyc_500_599++;
+			break;
+		    case 6:
+			costcyc_600_699++;
+			break;
+		    case 7:
+			costcyc_700_799++;
+			break;
+		    case 8:
+			costcyc_800_899++;
+			break;
+		    case 9:
+			costcyc_900_999++;
+			break;
+		    case 10:
+			costcyc_1000_1099++;
+			break;
+		    case 11:
+			costcyc_1100_1199++;
+			break;
+		    case 12:
+			costcyc_1200_1299++;
+			break;
+		    case 13:
+			costcyc_1300_1399++;
+			break;
+		    case 14:
+			costcyc_1400_1499++;
+			break;
+		    case 15:
+			costcyc_1500_plus++;
+			break;
+		    default:
+			costcyc_1500_plus++;
+			break;
+		}
+
+		if(missCost<=60){
+		   cost_0_60++;
+		}
+		else if(missCost<=120){
+		   cost_61_120++;
+		}
+		else if(missCost<=180){
+		   cost_121_180++;
+		}
+		else if(missCost<=240){
+		   cost_181_240++;
+		}
+		else if(missCost<=300){
+		   cost_241_300++;
+		}
+		else if(missCost<=360){
+		   cost_301_360++;
+		}
+		else if(missCost<=420){
+		   cost_361_420++;
+		}
+		else if(missCost<=480){
+		   cost_421_480++;
+		}
+		else{
+		   cost_481_plus++;
+		}*/
+		/*if(missCost<=0.05){
+		   cost_00_05++;
+		}
+		else if(missCost<=0.10){
+		   cost_06_10++;
+		}
+		else if(missCost<=0.15){
+		   cost_11_15++;
+		}
+		else if(missCost<=0.20){
+		   cost_16_20++;
+		}
+		else if(missCost<=0.25){
+		   cost_21_25++;
+		}
+		else if(missCost<=0.30){
+		   cost_26_30++;
+		}
+		else if(missCost<=0.35){
+		   cost_31_35++;
+		}
+		else if(missCost<=0.40){
+		   cost_36_40++;
+		}
+		else if(missCost<=0.45){
+		   cost_41_45++;
+		}
+		else if (missCost<=0.50){
+		   cost_46_50++;
+		}
+		else if(missCost<=0.55){
+		   cost_51_55++;
+		}
+		else if(missCost<=0.60){
+		   cost_56_60++;
+		}
+		else if(missCost<=0.65){
+		   cost_61_65++;
+		}
+		else if(missCost<=0.70){
+		   cost_66_70++;
+		}
+		else if(missCost<=0.75){
+		   cost_71_75++;
+		}
+		else if(missCost<=0.80){
+		   cost_76_80++;
+		}
+		else if(missCost<=0.85){
+		   cost_81_85++;
+		}
+		else if(missCost<=0.90){
+		   cost_86_90++;
+		}
+		else if(missCost<=0.95){
+		   cost_91_95++;
+		}
+		else if(missCost<=1.00){
+		   cost_96_100++;
+		}
+		else if(missCost<=1.05){
+		   cost_101_105++;
+		}
+		else if(missCost<=1.10){
+		   cost_106_110++;
+		}
+		else if(missCost<=1.15){
+		   cost_111_115++;
+		}
+		else if(missCost<=1.20){
+		   cost_116_120++;
+		}
+		else{
+		   cost_121_plus++;
+		}*/
+		
+		//incrementing my own miss counter here
+		//LINmissCount++;
+
 	      }
 
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -202,6 +433,7 @@ void CACHE::handle_fill()
             sim_access[fill_cpu][MSHR.entry[mshr_index].type]++;
 
             fill_cache(set, way, &MSHR.entry[mshr_index]);
+	    //block[set][way].cost = MCost;
 
             // RFO marks cache line dirty
             if (cache_type == IS_L1D) {
@@ -243,6 +475,182 @@ void CACHE::handle_fill()
 	      {
 		uint64_t current_miss_latency = (current_core_cycle[fill_cpu] - MSHR.entry[mshr_index].cycle_enqueued);
 		total_miss_latency += current_miss_latency;
+
+		uint64_t start = MSHR.entry[mshr_index].cycle_enqueued;
+		uint64_t end = current_core_cycle[fill_cpu];
+
+		double missCost = 0;
+
+		for(uint64_t cyc = start; cyc<=end; cyc++){
+		   missCost += 1.0/MSHR.occupancy;
+		}
+
+		//total_miss_latency += missCost;
+		MSHR.entry[mshr_index].miss_cost = missCost;
+		block[set][way].cost = missCost;
+		//MCost = missCost;
+
+		uint64_t cycDiff = end-start;
+		switch ((int)(cycDiff/100)){
+                    case 0:
+                        costcyc_0_99++;
+                        break;
+                    case 1:
+                        costcyc_100_199++;
+                        break;
+                    case 2:
+                        costcyc_200_299++;
+                        break;
+                    case 3:
+                        costcyc_300_399++;
+                        break;
+                    case 4:
+                        costcyc_400_499++;
+                        break;
+                    case 5:
+                        costcyc_500_599++;
+                        break;
+                    case 6:
+                        costcyc_600_699++;
+                        break;
+                    case 7:
+                        costcyc_700_799++;
+                        break;
+                    case 8:
+                        costcyc_800_899++;
+                        break;
+                    case 9:
+                        costcyc_900_999++;
+                        break;
+                    case 10:
+                        costcyc_1000_1099++;
+                        break;
+                    case 11:
+                        costcyc_1100_1199++;
+                        break;
+                    case 12:
+                        costcyc_1200_1299++;
+                        break;
+                    case 13:
+                        costcyc_1300_1399++;
+                        break;
+                    case 14:
+                        costcyc_1400_1499++;
+                        break;
+                    case 15:
+                        costcyc_1500_plus++;
+                        break;
+                    default:
+                        costcyc_1500_plus++;
+                        break;
+		}
+
+		if(missCost<=60){
+                   cost_0_60++;
+                }
+                else if(missCost<=120){
+                   cost_61_120++;
+                }
+                else if(missCost<=180){
+                   cost_121_180++;
+                }
+                else if(missCost<=240){
+                   cost_181_240++;
+                }
+                else if(missCost<=300){
+                   cost_241_300++;
+                }
+                else if(missCost<=360){
+                   cost_301_360++;
+                }
+                else if(missCost<=420){
+                   cost_361_420++;
+                }
+                else if(missCost<=480){
+                   cost_421_480++;
+                }
+                else{
+                   cost_481_plus++;
+                }
+		/*if(missCost<=0.05){
+		   cost_00_05++;
+		}
+		else if(missCost<=0.10){
+		   cost_06_10++;
+		}
+		else if(missCost<=0.15){
+		    cost_11_15++;
+		}
+		else if(missCost<=0.20){
+		    cost_16_20++;
+		}
+		else if(missCost<=0.25){
+		    cost_21_25++;
+		}
+		else if(missCost<=0.30){
+		    cost_26_30++;
+		}
+		else if(missCost<=0.35){
+		    cost_31_35++;
+		}
+		else if(missCost<=0.40){
+		    cost_36_40++;
+		}
+		else if(missCost<=0.45){
+		    cost_41_45++;
+		}
+		else if (missCost<=0.50){
+		    cost_46_50++;
+		}
+		else if(missCost<=0.55){
+		    cost_51_55++;
+		}
+		else if(missCost<=0.60){
+		    cost_56_60++;
+		}
+		else if(missCost<=0.65){
+		    cost_61_65++;
+		}
+		else if(missCost<=0.70){
+		    cost_66_70++;
+		}
+		else if(missCost<=0.75){
+		    cost_71_75++;
+		}
+		else if(missCost<=0.80){
+		    cost_76_80++;
+		}
+		else if(missCost<=0.85){
+		    cost_81_85++;
+		}
+		else if(missCost<=0.90){
+		    cost_86_90++;
+		}
+		else if(missCost<=0.95){
+		    cost_91_95++;
+		}
+		else if(missCost<=1.00){
+		    cost_96_100++;
+		}
+		else if(missCost<=1.05){
+		    cost_101_105++;
+		}
+		else if(missCost<=1.10){
+		    cost_106_110++;
+		}
+		else if(missCost<=1.15){
+		    cost_111_115++;
+		}
+		else if(missCost<=1.20){
+		    cost_116_120++;
+		}
+		else{
+		    cost_121_plus++;
+		}*/
+
+		//incrementing personal miss counter here
+		LINmissCount++;
+
 	      }
 	  
             MSHR.remove_queue(&MSHR.entry[mshr_index]);
@@ -1038,6 +1446,7 @@ void CACHE::fill_cache(uint32_t set, uint32_t way, PACKET *packet)
     block[set][way].data = packet->data;
     block[set][way].cpu = packet->cpu;
     block[set][way].instr_id = packet->instr_id;
+    block[set][way].cost = packet->miss_cost;
 
     DP ( if (warmup_complete[packet->cpu]) {
     cout << "[" << NAME << "] " << __func__ << " set: " << set << " way: " << way;

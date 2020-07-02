@@ -21,11 +21,130 @@ uint64_t warmup_instructions     = 1000000,
 
 time_t start_time;
 
+// Counters for MLP-costs in cycles (endcyc - startcyc)
+uint64_t costcyc_0_99 = 0;
+uint64_t costcyc_100_199 = 0;
+uint64_t costcyc_200_299 = 0;
+uint64_t costcyc_300_399 = 0;
+uint64_t costcyc_400_499 = 0;
+uint64_t costcyc_500_599 = 0;
+uint64_t costcyc_600_699 = 0;
+uint64_t costcyc_700_799 = 0;
+uint64_t costcyc_800_899 = 0;
+uint64_t costcyc_900_999 = 0;
+uint64_t costcyc_1000_1099 = 0;
+uint64_t costcyc_1100_1199 = 0;
+uint64_t costcyc_1200_1299 = 0;
+uint64_t costcyc_1300_1399 = 0;
+uint64_t costcyc_1400_1499 = 0;
+uint64_t costcyc_1500_plus = 0;
+
+// Counters for MLP-costs from LIN policy (from start to end cost += 1/occupancy)
+/*uint64_t cost_00_05 = 0;
+uint64_t cost_06_10 = 0;
+uint64_t cost_11_15 = 0;
+uint64_t cost_16_20 = 0;
+uint64_t cost_21_25 = 0;
+uint64_t cost_26_30 = 0;
+uint64_t cost_31_35 = 0;
+uint64_t cost_36_40 = 0;
+uint64_t cost_41_45 = 0;
+uint64_t cost_46_50 = 0;
+uint64_t cost_51_55 = 0;
+uint64_t cost_56_60 = 0;
+uint64_t cost_61_65 = 0;
+uint64_t cost_66_70 = 0;
+uint64_t cost_71_75 = 0;
+uint64_t cost_76_80 = 0;
+uint64_t cost_81_85 = 0;
+uint64_t cost_86_90 = 0;
+uint64_t cost_91_95 = 0;
+uint64_t cost_96_100 = 0;
+uint64_t cost_101_105 = 0;
+uint64_t cost_106_110 = 0;
+uint64_t cost_111_115 = 0;
+uint64_t cost_116_120 = 0;
+uint64_t cost_121_plus = 0;*/
+
+uint64_t cost_0_60 = 0;
+uint64_t cost_61_120 = 0;
+uint64_t cost_121_180 = 0;
+uint64_t cost_181_240 = 0;
+uint64_t cost_241_300 = 0;
+uint64_t cost_301_360 = 0;
+uint64_t cost_361_420 = 0;
+uint64_t cost_421_480 = 0;
+uint64_t cost_481_plus = 0;
+
+// Miss counter
+uint64_t LINmissCount = 0; 
+
 // PAGE TABLE
 uint32_t PAGE_TABLE_LATENCY = 0, SWAP_LATENCY = 0;
 queue <uint64_t > page_queue;
 map <uint64_t, uint64_t> page_table, inverse_table, recent_page, unique_cl[NUM_CPUS];
 uint64_t previous_ppage, num_adjacent_page, num_cl[NUM_CPUS], allocated_pages, num_page[NUM_CPUS], minor_fault[NUM_CPUS], major_fault[NUM_CPUS];
+
+void print_collected_costs(){
+    cout<< "//////////////////////////////////////////" << endl
+	<< "MISS COST COUNTERS FOR CYCLE COUNTS" << endl
+	<< "0-99 -----> " << costcyc_0_99 << endl
+	<< "100-199 -----> " << costcyc_100_199 << endl
+	<< "200-299 -----> " << costcyc_200_299 << endl
+	<< "300-399 -----> " << costcyc_300_399 << endl
+	<< "400-499 -----> " << costcyc_400_499 << endl
+	<< "500-599 -----> " << costcyc_500_599 << endl
+	<< "600-699 -----> " << costcyc_600_699 << endl
+	<< "700-799 -----> " << costcyc_700_799 << endl
+	<< "800-899 -----> " << costcyc_800_899 << endl
+	<< "900-999 -----> " << costcyc_900_999 << endl
+	<< "1000-1099 -----> " << costcyc_1000_1099 << endl
+	<< "1100-1199 -----> " << costcyc_1100_1199 << endl
+	<< "1200-1299 -----> " << costcyc_1200_1299 << endl
+	<< "1300-1399 -----> " << costcyc_1300_1399 << endl
+	<< "1400-1499 -----> " << costcyc_1400_1499 << endl
+	<< "1500- -----> " << costcyc_1500_plus << endl;
+
+    cout<< "//////////////////////////////////////////" << endl
+	<< "MISS COST COUNTERS FOR LIN MLP_COST VALUES" << endl
+	<< "0-60 -----> " << cost_0_60 << endl
+	<< "61-120 -----> " << cost_61_120 << endl
+	<< "121-180 -----> " << cost_121_180 << endl
+	<< "181-240 -----> " << cost_181_240 << endl
+	<< "241-300 -----> " << cost_241_300 << endl
+	<< "301-360 -----> " << cost_301_360 << endl
+	<< "361-420 -----> " << cost_361_420 << endl
+	<< "421-480 -----> " << cost_421_480 << endl
+	<< "481- -----> " << cost_481_plus << endl;
+	/*<< ".00-.05 -----> " << cost_00_05 << endl
+	<< ".06-.10 -----> " << cost_06_10 << endl
+	<< ".11-.15 -----> " << cost_11_15 << endl
+	<< ".16-.20 -----> " << cost_16_20 << endl
+	<< ".21-.25 -----> " << cost_21_25 << endl
+	<< ".26-.30 -----> " << cost_26_30 << endl
+	<< ".31-.35 -----> " << cost_31_35 << endl
+	<< ".36-.40 -----> " << cost_36_40 << endl
+	<< ".41-.45 -----> " << cost_41_45 << endl
+	<< ".46-.50 -----> " << cost_46_50 << endl
+	<< ".51-.55 -----> " << cost_51_55 << endl
+	<< ".56-.60 -----> " << cost_56_60 << endl
+	<< ".61-.65 -----> " << cost_61_65 << endl
+	<< ".66-.70 -----> " << cost_66_70 << endl
+	<< ".71-.75 -----> " << cost_71_75 << endl
+	<< ".76-.80 -----> " << cost_76_80 << endl
+	<< ".81-.85 -----> " << cost_81_85 << endl
+	<< ".86-.90 -----> " << cost_86_90 << endl
+	<< ".91-.95 -----> " << cost_91_95 << endl
+	<< ".96-1.00 -----> " << cost_96_100 << endl
+	<< "1.01-1.05 -----> " << cost_101_105 << endl
+	<< "1.06-1.10 -----> " << cost_106_110 << endl
+	<< "1.11-1.15 -----> " << cost_111_115 << endl
+	<< "1.16-1.20 -----> " << cost_116_120 << endl
+	<< "1.21- -----> " << cost_121_plus << endl;*/
+
+    cout<< "//////////////////////////////////////////"<< endl
+	<< "PERSONAL MISS COUNTER -----> " << LINmissCount << endl;
+}
 
 void record_roi_stats(uint32_t cpu, CACHE *cache)
 {
@@ -700,7 +819,7 @@ int main(int argc, char** argv)
 
         ooo_cpu[i].L1D.cpu = i;
         ooo_cpu[i].L1D.cache_type = IS_L1D;
-        ooo_cpu[i].L1D.MAX_READ = (2 > MAX_READ_PER_CYCLE) ? MAX_READ_PER_CYCLE : 2;
+        ooo_cpu[i].L1D.MAX_READ = MAX_READ_PER_CYCLE;//(2 > MAX_READ_PER_CYCLE) ? MAX_READ_PER_CYCLE : 2;
         ooo_cpu[i].L1D.fill_level = FILL_L1;
         ooo_cpu[i].L1D.lower_level = &ooo_cpu[i].L2C; 
         ooo_cpu[i].L1D.l1d_prefetcher_initialize();
@@ -712,11 +831,12 @@ int main(int argc, char** argv)
         ooo_cpu[i].L2C.upper_level_dcache[i] = &ooo_cpu[i].L1D;
         ooo_cpu[i].L2C.lower_level = &uncore.LLC;
         ooo_cpu[i].L2C.l2c_prefetcher_initialize();
+	ooo_cpu[i].L2C.MAX_READ = MAX_READ_PER_CYCLE;
 
         // SHARED CACHE
         uncore.LLC.cache_type = IS_LLC;
         uncore.LLC.fill_level = FILL_LLC;
-        uncore.LLC.MAX_READ = NUM_CPUS;
+        uncore.LLC.MAX_READ = MAX_READ_PER_CYCLE;//NUM_CPUS;
         uncore.LLC.upper_level_icache[i] = &ooo_cpu[i].L2C;
         uncore.LLC.upper_level_dcache[i] = &ooo_cpu[i].L2C;
         uncore.LLC.lower_level = &uncore.DRAM;
@@ -925,6 +1045,7 @@ int main(int argc, char** argv)
     uncore.LLC.llc_replacement_final_stats();
     print_dram_stats();
 #endif
+    print_collected_costs();
 
     return 0;
 }
