@@ -32,7 +32,7 @@ uint32_t CACHE::llc_find_victim(uint32_t cpu, uint64_t instr_id, uint32_t set, c
 
     //LIN victim
     if(way==NUM_WAY){
-      double smallest = ((double)block[set][0].lru + (4*block[set][0].cost));
+      double smallest = ((double)((NUM_WAY-1) - block[set][0].lru) + (4*block[set][0].cost));
         uint32_t tempWay = 0;
         for(way=0; way<NUM_WAY; way++){
            double toCompare = ((double)block[set][way].lru + (4*block[set][way].cost));
